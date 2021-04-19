@@ -46,10 +46,12 @@ import SendIcon from '@material-ui/icons/Send';
 import EditIcon from '@material-ui/icons/Edit';
 import Home from './Home'
 import ReactCategory from './React'
+import ReduxCategory from './ReduxCategory'
+import UdacityCategory from './Udacity'
 import NewPost from './Modal'
 import TuneIcon from '@material-ui/icons/Tune';
 import RadioButtonCheckedIcon from '@material-ui/icons/RadioButtonChecked';
-import { addPost } from '../actions'
+import { addPost, getPostsByCategory } from '../actions'
 import {useSelector, useDispatch} from 'react-redux'
 
 
@@ -169,6 +171,10 @@ const StyledMenuItem = withStyles((theme) => ({
 }))(MenuItem);
 
 export default function App(props) {
+
+  /* Reference to dispatch function */
+  const dispatch = useDispatch()
+
   /* State for index of category option */
   const [value, setValue] = React.useState(0);
   useEffect(() => console.log(value), [value]);
@@ -178,9 +184,30 @@ export default function App(props) {
   const classes = useStyles();
 
   /*  set state to index of the clicked category */
-  const handleChange = (e,index) =>{
-  setValue(index)
-  //console.log(index)
+  const handleChange = (index) => {
+    // change state to the value of index
+    setValue(index)
+    // variable to store category
+    var category;
+    // Match the index with Post category
+    switch(index) {
+      case 0:
+      console.log('yes')
+      category = undefined;
+      break;
+      case 1:
+      console.log('no')
+      category='react';
+      break;
+      case 2:
+      category='redux';
+      break;
+      case 3:
+      category='udacity';
+      break;
+    }
+    // Update the redux store with the category clicked
+    dispatch(getPostsByCategory(category));
   }
 
   // State for select category dropDown inside modal
@@ -194,9 +221,13 @@ export default function App(props) {
   const handleOpen = () => {
     setOpen(true);
   };
+
+  // reload window
+  const reload=()=>window.location.reload();
   /* called if modal is closed */
   const handleClose = () => {
     setOpen(false);
+    //reload();
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -211,12 +242,6 @@ export default function App(props) {
 
 
   const [test, setTest] = React.useState(null);
-
-
-
-
-
-
 
   return (
     <div className={classes.root}>
@@ -243,8 +268,8 @@ export default function App(props) {
             {['Home', 'React', 'Redux', 'Udacity'].map((text, index) => (
               <ListItem button key={text}
                 /* Set state to the index value of the clicked list item*/
-                onClick = {()=>(index===0) ? setValue(0): (index===1) ? setValue(1):
-                  (index===2) ? setValue(2): (index===3) ? setValue(3) : undefined}>
+                onClick = {()=>(index===0) ? handleChange(0): (index===1) ? handleChange(1):
+                  (index===2) ? handleChange(2): (index===3) ? handleChange(3) : undefined}>
                 <ListItemIcon>
                   {index === 0 && <HomeIcon/>}
                   {index === 1 && <ReactIcon size={24}/>}
@@ -323,6 +348,18 @@ export default function App(props) {
         {value === 1 && (
           /* Display contents of react component */
           <ReactCategory/>
+        )}
+
+        {/* Redux Category is clicked */}
+        {value === 2 && (
+          /* Display contents of react component */
+          <ReduxCategory/>
+        )}
+
+        {/* Udacity Category is clicked */}
+        {value === 3 && (
+          /* Display contents of react component */
+          <UdacityCategory/>
         )}
 
 

@@ -27,7 +27,8 @@ import { BsChat } from "react-icons/bs";
 import {useSelector, useDispatch} from 'react-redux'
 import EditPost from './EditPost'
 import Comments from './Comments'
-
+import { deletePost } from '../utils/api'
+import Posts from './Posts'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -58,6 +59,10 @@ const useStyles = makeStyles((theme) => ({
   coloredButton: {
     backgroundColor:'black'
   },
+  lists:{
+    listStyle:'none',
+
+  }
 }));
 
 
@@ -96,25 +101,36 @@ export default function Home(){
   const dispatch = useDispatch()
 
 
-  const foodie = useSelector(state => state.postsReducer)
+  const foodie = useSelector(state => state.postsReducer);
   const modea = useSelector(state => state.modalReducer.modalState)
   const votedState = useSelector(state => state.voteReducer)
+
 
   /* Async method to get post from API */
   const getElements = async () => {
     const elems = await getAllPosts();
 
     setAllposts(elems)
+    //console.log(allPosts)
     // dispatch getPosts action
     dispatch(getPosts(await getAllPosts()))
 
     return elems;
  };
+ // reload window
+ const reload=()=>window.location.reload();
+ // Delete post
+ const deletePosts = (id) => {
+   deletePost(id)
+   // refresh window
+   reload()
+ }
 
   /*  */
-  const openModal = (id) => {
+  const openModal = (e,id) => {
     // dispatch action to set modal state open and id of the post clicked
     dispatch(modalState({open:true,id:id}))
+    //console.log(id)
 
   }
 
@@ -124,11 +140,12 @@ export default function Home(){
   },[])
 
   const getAll = () => {
-    console.log(allPosts)
+    //console.log(foodie)
     /* dispatch action to store posts in store */
     dispatch(getPosts({allPosts}))
   }
-
+//console.log(allPosts)
+// console.log(foodie)
 const [upIcon, setUpIcon]= React.useState(BsShift);
 const [downIcon, setDownIcon] = React.useState(BsShift);
   /* upVote or downVote a post */
@@ -203,13 +220,20 @@ const [downIcon, setDownIcon] = React.useState(BsShift);
       setDownIcon(BsShift);
 
     }
-
   }
 
   //let postee = foodie.post.elems
 
   // Comment Section expanded State
   const [expanded, setExpanded] = React.useState(false);
+
+  // state containing id of clicked posts
+  const [clickedPostedId, setClickedPostId] = React.useState('');
+  //console.log(clickedPostedId)
+  const setId = (id) => {
+    setClickedPostId(id)
+    //console.log(id)
+  }
 
   // Set state for comment section
   const handleExpandClick = () => {
@@ -218,88 +242,95 @@ const [downIcon, setDownIcon] = React.useState(BsShift);
 
 
   return (
-    <li>
-      {modea.open ===true &&(
-        <div>
-          {<EditPost />}
-        </div>
-      )}
-
-      {foodie.post.map(postings => (
-
-
-      <Card className={classes.cardRoot}>
-
-        <CardHeader
-          action={
-            <div>
-              <IconButton aria-label="settings" onClick={handleMenuClick}>
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                id="simple-menu"
-                anchorEl={anchorEl}
-                keepMounted
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
+    /*<div>
+        <li className={classes.lists} >
+          <div>
+            {foodie.post.map((postings,i) => (
+          <Card className={classes.cardRoot} key={i}>
+            <CardHeader
+              action={
+                <div>
+                  <IconButton aria-label="settings" onClick={handleMenuClick}>
+                    <MoreVertIcon />
+                  </IconButton>
+                  <Menu
+                    id="simple-menu"
+                    anchorEl={anchorEl}
+                    keepMounted
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem onClick={
+                      (e) => {handleClose(); openModal(e,postings.id); handleMenuClose(); setId(postings.id)}
+                    }>
+                      Edit Post
+                    </MenuItem>
+                    <MenuItem onClick= {
+                      () => {handleClose(); deletePosts(postings.id); handleMenuClose()}
+                    }>
+                      Delete Post
+                    </MenuItem>
+                  </Menu>
+                </div>
+              }
+              title=<Badge
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              badgeContent={postings.category} color="primary">{postings.author}</Badge>
+              subheader={`September 14, 2016 ${postings.id}`}
+              />
+            <CardContent>
+              <Typography gutterBottom variant="h6" component="h2">
+                {postings.title}
+              </Typography>
+              <Typography variant="body2" color="textPrimary" component="p" >
+                {postings.body}
+              </Typography>
+            </CardContent>
+            <CardActions >
+              <Button
+                className={classes.button}
+                startIcon={upIcon}
+                onClick = {() => upVotePost(postings.id)}
               >
-                <MenuItem onClick={() => {handleClose(); openModal(postings.id); handleMenuClose()}}>Edit Post</MenuItem>
-                <MenuItem onClick={handleClose}>Delete Post</MenuItem>
-              </Menu>
-            </div>
-          }
-          title=<Badge
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-          }}
-          badgeContent={postings.category} color="primary">{postings.author}</Badge>
-          subheader="September 14, 2016"
-          />
+                {postings.voteScore}
+              </Button>
 
-        <CardContent>
-          <Typography gutterBottom variant="h6" component="h2">
-            {postings.title}
-          </Typography>
-          <Typography variant="body2" color="textPrimary" component="p" >
-            {postings.body}
-          </Typography>
-        </CardContent>
+              <Divider orientation="vertical" flexItem/>
+              <Button
+                className={classes.button}
+                startIcon={downIcon} className={classes.rotate}
+                onClick={() => downVotePost(postings.id)}
+              >
+              </Button>
 
+              <Button
+                className={classes.button}
+                startIcon={<BsChat />}
+                onClick ={handleExpandClick}
+              >
+                {postings.commentCount}
+              </Button>
+            </CardActions>
+            {<Comments
+              expanded={expanded}
+              />}
+          </Card>
+          ))}
+          </div>
 
+        </li>
 
-        <CardActions >
-          <Button
-            className={classes.button}
-            startIcon={upIcon}
-            onClick = {() => upVotePost(postings.id)}
-          >
-            {postings.voteScore}
-          </Button>
-
-          <Divider orientation="vertical" flexItem/>
-          <Button
-            className={classes.button}
-            startIcon={downIcon} className={classes.rotate}
-            onClick={() => downVotePost(postings.id)}
-          >
-          </Button>
-
-          <Button
-            className={classes.button}
-            startIcon={<BsChat />}
-            onClick ={handleExpandClick}
-          >
-            {postings.commentCount}
-          </Button>
-        </CardActions>
-
-        {<Comments
-          expanded={expanded}
-          />}
-      </Card>
-
-      ))}
-    </li>
+        {modea.open ===true &&(
+          <div>
+            {<EditPost
+              clickedPostId={clickedPostedId}/>}
+          </div>
+        )}
+    </div>*/
+    <Posts />
   )
+
 }

@@ -26,7 +26,7 @@ const postsReducer = (state = intialState, action) => {
     case ADD_POST :
       const { post } = action;
       const newPost = state.post.push(post);
-      console.log(state.post)
+      //console.log(state.post)
         return {
           ...state,
           /*[post]: {
@@ -57,10 +57,10 @@ const postsReducer = (state = intialState, action) => {
         }
 
     case GET_POSTS_BY_CATEGORY:
-      const { category, posts } = action;
+      const { category } = action;
        return {
          ...state,
-         [category]: posts
+         category: category
        };
 
 

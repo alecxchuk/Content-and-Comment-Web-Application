@@ -13,7 +13,7 @@ import InputBase from '@material-ui/core/InputBase';
 import { addNewPost } from '../actions'
 import {useSelector, useDispatch} from 'react-redux'
 import { addPost } from '../utils/api'
-
+import '../App.css'
 
 const BootstrapInput = withStyles((theme) => ({
   root: {
@@ -49,26 +49,25 @@ const BootstrapInput = withStyles((theme) => ({
     },
   },
 }))(InputBase);
-
+const top = 100;
+const left = 25;
 const useStyles = makeStyles((theme) => ({
+
   root: {
     display: 'flex',
 
   },
-
   modalHeader: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'center',
   },
-
   close: {
     position: 'absolute',
     right: 0,
     marginRight:28,
   },
-
   h3:{
     marginTop: 6,
     marginBottom:4
@@ -78,11 +77,9 @@ const useStyles = makeStyles((theme) => ({
     padding:0,
     margin:0,
   },
-
   h5:{
     marginBottom:4
   },
-
   modal: {
     display: 'flex',
     alignItems: 'center',
@@ -91,7 +88,7 @@ const useStyles = makeStyles((theme) => ({
   },
   modalTextBox: {
     width: '100%',
-    height: '35%',
+    height: '120px',
     padding: '10px',
     fontSize: '1em',
     border: '1px solid #bdbdbd',
@@ -99,7 +96,7 @@ const useStyles = makeStyles((theme) => ({
   },
   modalTitleBox:{
     width : '100%',
-    height: '35px',
+    height : '35px',
     padding: '10px',
     border: '1px solid #bdbdbd',
     outline: 'none',
@@ -108,10 +105,8 @@ const useStyles = makeStyles((theme) => ({
   },
   paper: {
     position: 'absolute',
-    width: 700,
-    height: 600,
+    width: '50%',
     backgroundColor: theme.palette.background.paper,
-
     borderRadius:'4px',
     boxShadow: theme.shadows[5],
     elevation:'4',
@@ -125,6 +120,12 @@ const useStyles = makeStyles((theme) => ({
 
     minWidth: 120,
   },
+  errorMessage: {
+    margin:0,
+    padding:0,
+    color:'red',
+    display: 'none'
+  }
 }));
 
 function rand() {
@@ -160,10 +161,10 @@ export default function NewPost({ opens, onClose, props}){
   const classes = useStyles();
 
   // State for select category dropDown inside modal
-  const [category, setCategory] = React.useState('React');
+  const [category, setCategory] = React.useState('react');
   // handle change for category dropDown
   const changeCategory = (event) => {
-    setCategory(event.target.value);
+    setCategory((event.target.value).LowerCase());
   };
 
   const [test, setTest] = React.useState(null);
@@ -201,35 +202,49 @@ export default function NewPost({ opens, onClose, props}){
   /* Reference to dispatch function */
   const dispatch = useDispatch()
   /* Called when post button is clicked */
+  // reload window
+  const reload=()=>window.location.reload();
   const createPost = (e) => {
+
     /* Generates unigue 22 digit id */
     let id= makeid(22)
     //console.log(id)
     const post = [];
     const obj = {}
-    obj.id = id;
+    //obj.id = id;
     obj.title = title
     obj.body = bodys
     obj.author = author
     obj.category = category;
-    obj.timestamp = Date.now();
+    //obj.timestamp = Date.now();
     post.push(obj)
+    //console.log(obj)
+    //console.log(post)
     //post.voteScore = 1;
     //post.deleted = false;
     //post.commentCount = 0;
-    console.log(post)
+    //console.log(post)
 
-    /* Update server with new Post */
-    //addPost(post)
-    /* dispatch */
-    dispatch(addNewPost({post}))
 
-    // Close Modal
-    onClose()
-    /* Empty modal fields */
-    setAuthor('');
-    setTitle('')
-    setBody('');
+
+    if (title !== '' || bodys !== '' || author !== '' ) {
+      /* Update server with new Post object */
+      addPost(obj)
+      /* dispatch */
+      dispatch(addNewPost({post}))
+
+      // Close Modal
+      onClose()
+      /* Empty modal fields */
+      setAuthor('');
+      setTitle('')
+      setBody('');
+      reload()
+    } else {
+      // Close Modal
+      onClose()
+    }
+
   }
 
 
@@ -248,10 +263,10 @@ export default function NewPost({ opens, onClose, props}){
   const body = (
     <div style={modalStyle} className={classes.paper}>
       <div className={classes.modalHeader}>
-      <h1 id="simple-modal-title" className={classes.h1}>Create a Post</h1>
-      <IconButton aria-label="settings" className={classes.close} onClick={onClose}>
-        <CloseIcon/>
-      </IconButton>
+        <h1 id="simple-modal-title" className={classes.h1}>Create a Post</h1>
+        <IconButton aria-label="settings" className={classes.close} onClick={onClose}>
+          <CloseIcon/>
+        </IconButton>
       </div>
 
       <h4 className={classes.h3}>Category</h4>
@@ -262,8 +277,7 @@ export default function NewPost({ opens, onClose, props}){
           onChange={changeCategory}
           input={<BootstrapInput />}
         >
-
-          <option value={'React'}>React</option>
+          <option value='React'>React</option>
           <option value={'Redux'}>Redux</option>
           <option value={'Udacity'}>Udacity</option>
         </NativeSelect>
@@ -276,13 +290,19 @@ export default function NewPost({ opens, onClose, props}){
       value={author}
       onChange={changeAuthor} />
 
-      <h4 className={classes.h5}>Title</h4>
+      <h5 className={classes.errorMessage} style ={{display: (author ==='' ? 'block':'none')}}>
+        Author cannot be empty
+      </h5>
 
+      <h4 className={classes.h5}>Title</h4>
       <input className={classes.modalTitleBox}
       type='text'
       placeholder='Write Something'
       value={title}
       onChange={changeTitle}/>
+      <h5 className={classes.errorMessage} style ={{display: (title ==='' ? 'block':'none')}}>
+      Title cannot be empty
+      </h5>
 
       <h4 className={classes.h5}>Body</h4>
       <textarea
@@ -291,10 +311,10 @@ export default function NewPost({ opens, onClose, props}){
       placeholder='Write Something'
       value={bodys}
       onChange={changeBody}/>
-      <p id="simple-modal-description">
 
-
-      </p>
+      <h5 className={classes.errorMessage} style ={{display: (bodys ==='' ? 'block':'none')}}>
+       Body cannot be empty
+       </h5>
       <Button variant="contained" color="primary" onClick={createPost}>
         Post
       </Button>
@@ -302,6 +322,7 @@ export default function NewPost({ opens, onClose, props}){
   );
 
   return(
+    <div className='center'>
     <Modal
       className={classes.modal}
       open={opens}
@@ -311,5 +332,6 @@ export default function NewPost({ opens, onClose, props}){
     >
       {body}
     </Modal>
+    </div>
   );
 }
