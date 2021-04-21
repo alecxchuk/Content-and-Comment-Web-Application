@@ -10,8 +10,8 @@ const headers = {
 
 /* Get all of the posts for a particular category */
 export async function getPostsByCategory(category) {
-  const res = await axios.get(`${uri}/:category/posts`, { headers });
-  return res.data.categories;
+  const res = await axios.get(`${uri}/${category}/posts`, { headers });
+  return res.data;
 }
 
 /* Get all of the posts. Useful for the main page when no category is selected. */
@@ -32,7 +32,7 @@ export async function getAllPosts() {
     .then(data => data.pending)*/
 
 /* Get the details of a single post */
-export async function getPostByPostId(id) {
+export async function getPostsByPostId(id) {
   const res = await axios.get(`${uri}/posts/${id}`, {headers})
   return res.data
 }
@@ -41,6 +41,7 @@ export async function getPostByPostId(id) {
 export async function addPost({ category, title, body, author }) {
   const id = makeid(22);
   const timestamp = Date.now();
+
   const res = await axios.post( `${uri}/posts`,
     {
       id,
@@ -115,6 +116,7 @@ return result;
 
 /* Edit the details of an existing post */
 export async function editPostByPostId({ id, title, body }) {
+  try {
   const res = await axios.put( `${uri}/posts/${id}`,
     {
       title,
@@ -122,8 +124,15 @@ export async function editPostByPostId({ id, title, body }) {
     },
     { headers }
   );
-
   return res.data;
+    console.log(res)
+  } catch (err) {
+    console.log(err)
+
+  }
+
+
+
 }
 
 

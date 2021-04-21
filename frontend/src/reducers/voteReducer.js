@@ -17,8 +17,9 @@ const voteReducer = (state = intialState, action) => {
     case UP_VOTED: {
       const { upVotedState, id } = action;
         return {
+          ...state,
           upVoted:upVotedState,
-          downVoted:false,
+          //downVoted:false,
           id: id
 
         }
@@ -27,8 +28,9 @@ const voteReducer = (state = intialState, action) => {
     case DOWN_VOTED:{
       const { downVotedState, id } = action;
         return {
+          ...state,
           downVoted:downVotedState,
-          upVote:false,
+          //upVote:false,
           id: id
 
         }

@@ -18,7 +18,7 @@ export const getPosts = post => ({
 
 export const getPostByPostId = id => ({
   type: GET_POST_BY_POST_ID,
-  id,
+  id
 });
 
 

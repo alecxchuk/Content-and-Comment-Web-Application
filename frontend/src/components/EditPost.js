@@ -13,6 +13,7 @@ import InputBase from '@material-ui/core/InputBase';
 import { getPostByPostId, editPostById } from '../actions'
 import {useSelector, useDispatch} from 'react-redux'
 import { modalState } from '../actions'
+import { getPostsByPostId, editPostByPostId } from '../utils/api'
 
 
 const BootstrapInput = withStyles((theme) => ({
@@ -91,7 +92,7 @@ const useStyles = makeStyles((theme) => ({
   },
   modalTextBox: {
     width: '100%',
-    height: '35%',
+    height: '120px',
     padding: '10px',
     fontSize: '1em',
     border: '1px solid #bdbdbd',
@@ -108,8 +109,8 @@ const useStyles = makeStyles((theme) => ({
   },
   paper: {
     position: 'absolute',
-    width: 700,
-    height: 600,
+    width: '50%',
+
     backgroundColor: theme.palette.background.paper,
 
     borderRadius:'4px',
@@ -125,6 +126,12 @@ const useStyles = makeStyles((theme) => ({
 
     minWidth: 120,
   },
+  errorMessage: {
+    margin:0,
+    padding:0,
+    color:'red',
+    display: 'none'
+  }
 }));
 
 function rand() {
@@ -142,10 +149,7 @@ function getModalStyle() {
   };
 }
 
-
-
-
-export default function EditPost(){
+export default function EditPost({clickedPostId}){
 
   /* State to store modal state(open or close) and its setter (setOpen)*/
   const [open, setOpen] = React.useState(false);
@@ -189,37 +193,35 @@ export default function EditPost(){
   const changeBody = (event) =>{
     setBody(event.target.value)
   }
-  /* Generate unique ids */
-  const makeid=(length) => {
-  var result = '';
-  var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for (var i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-  }
+
 
   /* Reference to dispatch function */
   const dispatch = useDispatch()
+  const reload=()=>window.location.reload();
+
   /* Called when post button is clicked */
   const createPost = (e) => {
-    /* Generates unigue 22 digit id */
-    let id= makeid(22)
+
     //console.log(id)
     const post = {};
-    post.id = id;
+    post.id = clickedPostId;
     post.title = title
     post.body = bodys
-    post.author = author
-    post.category = category;
-    post.timestamp = Date.now();
-    post.voteScore = 1;
-    post.deleted = false;
-    post.commentCount = 0;
 
     /* dispatch */
     //dispatch(addPost({post}))
+    if (title !== '' || body !== '' || author !== '' ) {
+      /* Update server with the edited Post object */
+        editPostByPostId(post);
+      /* dispatch */
+      //dispatch(addNewPost({post}))
+      // Close Modal
+      closeModal()
+      reload()
+    } else {
+      // Close Modal
+      closeModal()
+    }
 
   }
 
@@ -228,30 +230,38 @@ export default function EditPost(){
 
   const [postByIds, setPostByIds] = React.useState([])
 
-  const getPostWithId = async () => {
+  const modea = useSelector(state => state.modalReducer.modalState)
 
-      const elems = await getPostByPostId('sfghsrgsgsfg');
+  // Close edit post modal
+  /*const closeModal = () = {
+    dispatch(modalState({open:false,id:id})).
+  }*/
+  //console.log(modea)
+  const getPostWithId = async () => {
+      // Get the clicked posts id from store
+      const currentPostId = modea.id;
+      // Get post by the id
+      //const elems = await getPostsByPostId(clickedPostId);
+      const elems = await getPostsByPostId(currentPostId);
       setPostByIds(elems)
       // dispatch getPostByPostId action
       //const postIds = modalIsOpen.id
       dispatch(getPostByPostId({elems}))
       console.log(elems)
+      // insert spinner for data to load
+      setTitle(elems.title);
+      setAuthor(elems.author);
+      setBody(elems.body);
+      setCategory(elems.category);
       return elems;
 
  };
-
 
   useEffect(() => {
     getPostWithId()
 
   },[])
 
-
-  /*useEffect((data) => {
-    //dispatch(addPost({id,author,title,bodys,category}))
-
-  // Safe to add dispatch to the dependencies array
-}, [dispatch])*/
 
 
 
@@ -274,7 +284,6 @@ export default function EditPost(){
           onChange={changeCategory}
           input={<BootstrapInput />}
         >
-
           <option value={10}>React</option>
           <option value={20}>Redux</option>
           <option value={30}>Udacity</option>
@@ -287,14 +296,19 @@ export default function EditPost(){
       placeholder='e.g John Snow'
       value={author}
       onChange={changeAuthor} />
+      <h5 className={classes.errorMessage} style ={{display: (author ==='' ? 'block':'none')}}>
+        Author cannot be empty
+      </h5>
 
       <h4 className={classes.h5}>Title</h4>
-
       <input className={classes.modalTitleBox}
       type='text'
       placeholder='Write Something'
       value={title}
       onChange={changeTitle}/>
+      <h5 className={classes.errorMessage} style ={{display: (title ==='' ? 'block':'none')}}>
+      Title cannot be empty
+      </h5>
 
       <h4 className={classes.h5}>Body</h4>
       <textarea
@@ -303,10 +317,9 @@ export default function EditPost(){
       placeholder='Write Something'
       value={bodys}
       onChange={changeBody}/>
-      <p id="simple-modal-description">
-
-
-      </p>
+      <h5 className={classes.errorMessage} style ={{display: (bodys ==='' ? 'block':'none')}}>
+       Body cannot be empty
+       </h5>
       <Button variant="contained" color="primary" onClick={createPost}>
         Post
       </Button>
