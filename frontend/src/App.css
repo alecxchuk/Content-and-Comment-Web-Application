@@ -65,3 +65,25 @@
   padding: 0;
   margin: 0;
 }
+
+
+.anchor-more-text {
+  color: inherit;
+  font-weight: bold;
+}
+
+.block {
+  display: block;
+  width: 100%;
+  text-align: justify;
+}
+.none {
+  display: none;
+}
+.float {
+  display: none;
+  margin-left: auto;
+}
+.float:hover {
+  //display: block;
+}

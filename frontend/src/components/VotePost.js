@@ -194,7 +194,8 @@ export default function VotePost({posters}) {
       </div>
 
     {
-      <Comments expanded={expanded}/>
+      <Comments expanded={expanded}
+      commentId = {posters.id}/>
     }
     </div>
   )
