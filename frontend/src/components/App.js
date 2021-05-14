@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import AppBar from '@material-ui/core/AppBar';
@@ -10,63 +10,33 @@ import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
 import HomeIcon from '@material-ui/icons/Home';
-import { DiReact } from "react-icons/di";
 import SvgIcon from '@material-ui/core/SvgIcon';
 import AddBoxIcon from '@material-ui/icons/AddBox';
-import Logo from '../logo.svg';
-import Paper from '@material-ui/core/Paper';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
 import IconButton from '@material-ui/core/IconButton';
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardMedia from '@material-ui/core/CardMedia';
-import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
-import ThumbUpRoundedIcon from '@material-ui/icons/ThumbUpRounded';
-import ThumbDownRoundedIcon from '@material-ui/icons/ThumbDownRounded';
-import ChatBubbleIcon from '@material-ui/icons/ChatBubble';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import Modal from '@material-ui/core/Modal';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-import CloseIcon from '@material-ui/icons/Close';
-import TextField from '@material-ui/core/TextField';
-import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import Menu from '@material-ui/core/Menu';
-import DeleteIcon from '@material-ui/icons/Delete';
-import DraftsIcon from '@material-ui/icons/Drafts';
 import { withStyles } from '@material-ui/core/styles';
-import SendIcon from '@material-ui/icons/Send';
-import EditIcon from '@material-ui/icons/Edit';
 import Home from './Home'
 import ReactCategory from './React'
 import ReduxCategory from './ReduxCategory'
 import UdacityCategory from './Udacity'
-import NewPost from './Modal'
 import TuneIcon from '@material-ui/icons/Tune';
 import RadioButtonCheckedIcon from '@material-ui/icons/RadioButtonChecked';
-import { addPost, getPostsByCategory } from '../actions'
-import {useSelector, useDispatch} from 'react-redux'
+import { getPostsByCategory } from '../actions'
+import { useDispatch} from 'react-redux'
+import NewPost from './EditPost'
 
 
 
 const drawerWidth = 240;
-
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
-
   },
   padding:{
     padding: 0,
   },
-
   sort: {
     textAlignLast:'right'
   },
@@ -79,7 +49,6 @@ const useStyles = makeStyles((theme) => ({
   },
   drawerPaper: {
     width: drawerWidth,
-
   },
   drawerContainer: {
     overflow: 'auto',
@@ -87,24 +56,6 @@ const useStyles = makeStyles((theme) => ({
   content: {
     flexGrow: 1,
     padding: theme.spacing(3),
-  },
-
-
-  formControl: {
-
-    minWidth: 120,
-  },
-  selectEmpty: {
-    marginTop: theme.spacing(2),
-  },
-  paperRoot: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    '& > *': {
-      margin: theme.spacing(1),
-      width: theme.spacing(16),
-      height: theme.spacing(16),
-    },
   },
 }));
 
@@ -128,7 +79,7 @@ function ReactIcon(props) {
     <SvgIcon {...props} xmlns="http://www.w3.org/2000/svg" viewBox="-11.5 -10.23174 23 20.46348">
   <title>React Logo</title>
   <circle cx="0" cy="0" r="2.05" fill="#61dafb"/>
-  <g stroke="#61dafb" stroke-width="1" fill="none">
+  <g stroke="#61dafb" strokeWidth="1" fill="none">
     <ellipse rx="11" ry="4.2"/>
     <ellipse rx="11" ry="4.2" transform="rotate(60)"/>
     <ellipse rx="11" ry="4.2" transform="rotate(120)"/>
@@ -167,7 +118,6 @@ const StyledMenuItem = withStyles((theme) => ({
       },
     },
   },
-
 }))(MenuItem);
 
 export default function App(props) {
@@ -177,7 +127,7 @@ export default function App(props) {
 
   /* State for index of category option */
   const [value, setValue] = React.useState(0);
-  useEffect(() => console.log(value), [value]);
+
   /* State to store modal state(open or close) and its setter (setOpen)*/
   const [open, setOpen] = React.useState(false);
 
@@ -192,11 +142,9 @@ export default function App(props) {
     // Match the index with Post category
     switch(index) {
       case 0:
-      console.log('yes')
       category = undefined;
       break;
       case 1:
-      console.log('no')
       category='react';
       break;
       case 2:
@@ -205,6 +153,8 @@ export default function App(props) {
       case 3:
       category='udacity';
       break;
+      default:
+      break;
     }
     // Update the redux store with the category clicked
     dispatch(getPostsByCategory(category));
@@ -212,37 +162,47 @@ export default function App(props) {
 
   // State for select category dropDown inside modal
   const [sortMethod, setSortMethod] = React.useState('mimimum');
+
   // handle change for category dropDown
   const changeSorting = (event) => {
     setSortMethod(event.target.value);
   };
 
-  /* called if modal is open */
+  /* called if new post modal is open */
   const handleOpen = () => {
     setOpen(true);
   };
 
   // reload window
   const reload=()=>window.location.reload();
-  /* called if modal is closed */
+
+  /* called if new Post modal is closed */
   const handleClose = () => {
     setOpen(false);
-    //reload();
   };
 
+  // state for sort menu open and close
   const [anchorEl, setAnchorEl] = React.useState(null);
 
+  // Open sort menu
   const handleMenuClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-
+  // Close styled menu
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+  const [postAdded,setPostAdded] = React.useState(false);
+  //console.log(postAdded)
 
+  useEffect(() => {
+    setPostAdded(false)
+  },[postAdded])
 
-  const [test, setTest] = React.useState(null);
+  const newPostAdded =()=>{
 
+    setPostAdded(true)
+  }
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -251,8 +211,6 @@ export default function App(props) {
           <Typography variant="h6" noWrap>
             Categories
           </Typography>
-
-
         </Toolbar>
       </AppBar>
       <Drawer
@@ -275,7 +233,7 @@ export default function App(props) {
                   {index === 1 && <ReactIcon size={24}/>}
                   {index === 2 && <ReduxIcon size={24}/>}
                   {index === 3 && <UdacityIcon size={24}/>}
-               </ListItemIcon>
+                </ListItemIcon>
                 <ListItemText primary={text} />
               </ListItem>
             ))}
@@ -293,51 +251,47 @@ export default function App(props) {
         </div>
       </Drawer>
       <NewPost
-      opens={open}
-      onClose={handleClose}/>
+        opens={open}
+        onClose={handleClose}
+        newPostAddeds={newPostAdded}
+      />
 
       <main className={classes.content}>
         <Toolbar />
-
         <div className={classes.sort}>
-        <span>Sort By: minimum</span>
+          <span>Sort By: minimum</span>
 
-        <IconButton aria-label="settings" onClick={handleMenuClick}>
-          <TuneIcon className={classes.padding}/>
-        </IconButton>
+          <IconButton aria-label="settings" onClick={handleMenuClick}>
+            <TuneIcon className={classes.padding}/>
+          </IconButton>
 
         <StyledMenu
-        id="customized-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
+          id="customized-menu"
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <StyledMenuItem  dense={true} >
+            <ListItemIcon  >
+              <RadioButtonCheckedIcon color="secondary" fontSize="small"  />
+            </ListItemIcon>
+            <ListItemText primary="minimum" />
+          </StyledMenuItem>
+          <StyledMenuItem dense={true}>
+            <ListItemIcon>
 
-      >
-        <StyledMenuItem  dense={true} >
-          <ListItemIcon  >
-            <RadioButtonCheckedIcon color="secondary" fontSize="small"  />
-          </ListItemIcon>
-          <ListItemText primary="minimum" />
-        </StyledMenuItem>
-        <StyledMenuItem dense={true}>
-          <ListItemIcon>
+            </ListItemIcon>
+            <ListItemText primary="order by voteScore" />
+          </StyledMenuItem>
+          <StyledMenuItem dense={true}>
+            <ListItemIcon>
 
-          </ListItemIcon>
-          <ListItemText primary="order by voteScore" />
-        </StyledMenuItem>
-        <StyledMenuItem dense={true}>
-          <ListItemIcon>
-
-          </ListItemIcon>
-          <ListItemText primary="order by timestamp" />
-        </StyledMenuItem>
-      </StyledMenu>
-
-
-
-
-      </div>
+            </ListItemIcon>
+            <ListItemText primary="order by timestamp" />
+          </StyledMenuItem>
+        </StyledMenu>
+        </div>
         {/* Home Category is clicked */}
         {value === 0 && (
           /* Display contents of home component */
@@ -361,8 +315,6 @@ export default function App(props) {
           /* Display contents of react component */
           <UdacityCategory/>
         )}
-
-
       </main>
     </div>
   );

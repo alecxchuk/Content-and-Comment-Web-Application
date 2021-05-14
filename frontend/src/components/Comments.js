@@ -10,7 +10,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
 import VoteComment from './VoteComment'
-import { borderRadius } from '@material-ui/system';
 import FilledInput from '@material-ui/core/FilledInput';
 import clsx from 'clsx';
 import { getAllCommentsByPostId, addComment } from '../utils/api';
@@ -21,6 +20,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Menus from './MenuItemComment'
 import { deleteComment, editComment } from '../utils/api'
 import OnDeleteConfirmation from './OnDeleteConfirmation'
+import ReactLoading from 'react-loading';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -47,6 +47,10 @@ const useStyles = makeStyles((theme) => ({
     padding: '8px 0px',
     margin: 0,
   },
+  loading: {
+
+  margin: '0 auto',
+},
 }));
 
 export default function Comments({expanded, commentId}) {
@@ -55,19 +59,6 @@ export default function Comments({expanded, commentId}) {
   /* Reference to dispatch function */
   const dispatch = useDispatch()
 
-  // State for storing comments from server
-  const [comments, setComments] = React.useState();
-
-  const getComments = async () => {
-    // Get comments from server and store in state
-    setComments(await getAllCommentsByPostId(commentId));
-  }
-
-  useEffect(() => {
-    // getElements method call
-    getComments()
-  },[])
-
   // State and setter for comment in comment box
   const [newComment, setNewComment] = React.useState('');
 
@@ -75,6 +66,50 @@ export default function Comments({expanded, commentId}) {
   const handleComment =(e) => {
     setNewComment(e.target.value)
   }
+  // State to store if new comment has been added or not
+  const [isAdded, setIsAdded] = React.useState(false);
+
+
+
+  // State to store if request is done
+  const [isReqDone, setIsReq] = React.useState(false);
+
+  console.log(`expanded state is ${expanded}`)
+  console.log(`req is ${isAdded}`)
+
+  // Get all comments from server
+  const getComments = async () => {
+    // if comment icon is clicked
+    if (expanded || (!isReqDone && isAdded)) {
+      setTimeout(() => {
+        const elems =  getAllCommentsByPostId(commentId);
+        elems.then(()=> setIsReq(true));
+        elems.then(comment => setComments(comment))
+        return elems;
+      },1000);
+      // Get comments from server and store in state
+      //setComments(await getAllCommentsByPostId(commentId));
+    }
+  }
+
+  useEffect(() => {
+    // getElements method call
+    getComments()
+  },[isAdded,expanded,!isReqDone])
+
+
+
+  // Method to convert unix time to human date
+  const convertUnixToDate = (time) => {
+    var dates = new Date(time)
+    return dates.toString();
+  }
+
+  // Text for tooltip
+  const longText = `Click here to Input Name and picture. Default name is Anonymous`;
+
+  // state to store particular comment being edited and its setter
+  const [comm, setComm]= React.useState({})
 
   /* Called when add comment button is clicked */
   const addNewComment = (author, parentId) => {
@@ -89,25 +124,20 @@ export default function Comments({expanded, commentId}) {
     if (newComment !== '') {
       // Update server with new comment
       addComment(comment);
+
+      // Update comment state with new comment object.
+      //setComments(comments.concat(comment));
+
       // Set the comment field to empty
       setNewComment('');
-      // Update comment state with new comment object.
-      setComments(comments.concat(comment));
-
+      // state to show new Comment has been added so component will re render
+      setIsAdded(true)
+      setIsReq(false)
     }
   }
 
-  // Method to convert unix time to human date
-  const convertUnixToDate = (time) => {
-    var dates = new Date(time)
-    return dates.toString();
-  }
-
-  // Text for tooltip
-  const longText = `Click here to Input Name and picture. Default name is Anonymous`;
-
-  // state to store particular comment being edited and its setter
-  const [comm, setComm]= React.useState({})
+  // State for storing comments from server
+  const [comments, setComments] = React.useState();
 
   // Called when edit comment is clicked
   const edit_comment = (comment) => {
@@ -153,10 +183,13 @@ export default function Comments({expanded, commentId}) {
     // Delete comment from server
     deleteComment(id);
     // remove comment using the comment id
-    let arr = comments.filter(comment =>!comment.id.includes(id));
+    //let arr = comments.filter(comment =>!comment.id.includes(id));
     // update state with new comment array.
-    setComments(arr);
-    reload();
+    //setComments(arr);
+    //reload();
+    // Trigger re rerender
+    setIsAdded(true)
+    setIsReq(false)
     // Close delete confirmation modal after comment has been deleted
     closeAlertBox()
   }
@@ -189,115 +222,133 @@ export default function Comments({expanded, commentId}) {
     // Set editing state to false since we are done editng a comment
     setEditingState(false);
     // Remove the previous comment from the comment array
-    let arr = comments.filter(comment =>!comment.id.includes(id));
+    //let arr = comments.filter(comment =>!comment.id.includes(id));
     // Add the updated comment to the comment array.
-    setComments(arr.concat(comment))
+    //setComments(arr.concat(comment))
+
+    //Trigger rerender
+    setIsReq(false)
+    setIsAdded(true)
 
   }
 
   return (
     <Collapse in={expanded} timeout="auto" unmountOnExit>
       <List component="div" className={classes.commentContainer}  disablePadding>
-        <Divider  component="li" />
-        <ListItem button className={classes.alignCent}  alignItems="flex-start" >
-          <Tooltip title={longText}>
-            <ListItemAvatar className={classes.noPadding}>
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-            </ListItemAvatar>
-          </Tooltip>
-          <FilledInput
-              color="white"
-              placeholder="Write a comment..."
-              value={newComment}
-              onChange={handleComment}
-              multiline="true"
-              fullWidth={true}
-              disableUnderline="true"
-              style={{  borderRadius: 25, background:'#e0e0e0' ,paddingTop:8}}
+      {console.log(isReqDone)}
+      {
+        !isReqDone ?
+          <div >
+            <ReactLoading
+            className={classes.loading}
+              type={'bubbles'}
+              color={'green'}
+              height={'10%'}
+              width={'10%'}
             />
-          <Button variant="contained"
-            color="primary"
-            className = {classes.submit}
-            size="small"
-            style={{ borderRadius: 25 }}
-            onClick={() => addNewComment('Anonymous', commentId)}>
-            Add Comment
-          </Button>
-        </ListItem>
-        <Divider component="li" />
-        {comments !== undefined && (comments.map((comment) => (
-          <ListItem key={comment.id} button alignItems="flex-start" className={classes.noPadding}  >
-            <ListItemAvatar>
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-            </ListItemAvatar>
-            <div>
-              <ListItemText secondary={convertUnixToDate(comment.timestamp)}>
-                <Typography
-                  className={classes.bold}
-                  component="span"
-                  variant="subtitle2"
-                  color="textPrimary"
-                >
-                {comment.author}
-                </Typography>
-              </ListItemText>
-              <ListItemText>
-                <div >
-                  <ShowMoreText
-                    lines={3}
-                    more='See More'
-                    less='See Less'
+          </div>
+        :
+          <div>
+            <Divider  component="li" />
+            <ListItem button className={classes.alignCent}  alignItems="flex-start" >
+              <Tooltip title={longText}>
+                <ListItemAvatar className={classes.noPadding}>
+                  <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+                </ListItemAvatar>
+              </Tooltip>
+              <FilledInput
+                  placeholder="Write a comment..."
+                  value={newComment}
+                  onChange={handleComment}
+                  multiline="true"
+                  fullWidth={true}
+                  disableUnderline="true"
+                  style={{  borderRadius: 25, background:'#e0e0e0' ,paddingTop:8}}
+                />
+              <Button variant="contained"
+                color="primary"
+                className = {classes.submit}
+                size="small"
+                style={{ borderRadius: 25 }}
+                onClick={() => addNewComment('Anonymous', commentId)}>
+                Add Comment
+              </Button>
+            </ListItem>
+            <Divider component="li" />
+            {comments !== undefined && (comments.map((comment) => (
+              <ListItem key={comment.id} button alignItems="flex-start" className={classes.noPadding}  >
+                <ListItemAvatar>
+                  <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+                </ListItemAvatar>
+                <div>
+                  <ListItemText secondary={convertUnixToDate(comment.timestamp)}>
+                    <Typography
+                      className={classes.bold}
+                      component="span"
+                      variant="subtitle2"
+                      color="textPrimary"
+                    >
+                    {comment.author}
+                    </Typography>
+                  </ListItemText>
+                  <ListItemText>
+                    <div >
+                      <ShowMoreText
+                        lines={3}
+                        more='See More'
+                        less='See Less'
 
-                    className={comm.id === comment.id && editing ? 'none': 'block'}
-                    anchorClass="anchor-more-text"
-                    expanded={false}
-                    width={650}
-                  >
-                  {comment.body}
-                  </ShowMoreText>
-                  <div style={{ display: (comm.id === comment.id && editing ? 'block' : 'none')}}>
-                    <div style={{display: 'flex'}}>
-                      <FilledInput
-                        color="white"
-                        placeholder="Write a comment..."
-                        value= {ups ? updCom : comment.body}
-                        onChange= {handleUpdate}
-                        multiline="true"
-                        fullWidth={true}
-                        disableUnderline="true"
-                        style={{  width :'100%', borderRadius: 25, background:'#e0e0e0' ,paddingTop:8}}
-                      />
-                      <Button variant="contained"
-                        color="primary"
-                        className = {classes.submit}
-                        size="small"
-                        style={{ borderRadius: 25 }}
-                        onClick={() => updateComment(comment.id)}>
-                        Update
-                      </Button>
+                        className={comm.id === comment.id && editing ? 'none': 'block'}
+                        anchorClass="anchor-more-text"
+                        expanded={false}
+                        width={650}
+                      >
+                      {comment.body}
+                      </ShowMoreText>
+                      <div style={{ display: (comm.id === comment.id && editing ? 'block' : 'none')}}>
+                        <div style={{display: 'flex'}}>
+                          <FilledInput
+                            color="white"
+                            placeholder="Write a comment..."
+                            value= {ups ? updCom : comment.body}
+                            onChange= {handleUpdate}
+                            multiline="true"
+                            fullWidth={true}
+                            disableUnderline="true"
+                            style={{  width :'100%', borderRadius: 25, background:'#e0e0e0' ,paddingTop:8}}
+                          />
+                          <Button variant="contained"
+                            color="primary"
+                            className = {classes.submit}
+                            size="small"
+                            style={{ borderRadius: 25 }}
+                            onClick={() => updateComment(comment.id)}>
+                            Update
+                          </Button>
+                        </div>
+                        <span style={{paddingLeft:'8px', fontSize : '12px'}}>Press Esc to<a  style={{ color: 'blue', fontDecoration : 'underline', fontSize : '12px'}} onClick={cancel_editing}> Cancel Editing</a></span>
+                      </div>
                     </div>
-                    <span style={{paddingLeft:'8px', fontSize : '12px'}}>Press Esc to<a  style={{ color: 'blue', fontDecoration : 'underline', fontSize : '12px'}} onClick={cancel_editing}> Cancel Editing</a></span>
-                  </div>
+                    <VoteComment commentary={comment}/>
+                  </ListItemText>
+                  <Divider  component="li" />
                 </div>
-                <VoteComment commentary={comment}/>
-              </ListItemText>
-              <Divider  component="li" />
-            </div>
-            <Menus
-              editing={() => edit_comment(comment)}
-              openAlertBox={() => openAlertBox(comment.id)}
-              commenter={comment}
-            />
-            <OnDeleteConfirmation
-              openAlertBox={openDelAlertBox}
-              closeAlertBox={() => closeAlertBox(comment.id)}
-              deleteComment={() => delete_comment(comment.id)}
-              commenter={comment}
-              caption='comment'/>
-          </ListItem>
-        )))}
+                <Menus
+                  editing={() => edit_comment(comment)}
+                  openAlertBox={() => openAlertBox(comment.id)}
+                  commenter={comment}
+                />
+                <OnDeleteConfirmation
+                  openAlertBox={openDelAlertBox}
+                  closeAlertBox={() => closeAlertBox(comment.id)}
+                  toDelete={() => delete_comment(comment.id)}
+                  element={comment}
+                  caption='comment'/>
+              </ListItem>
+            )))}
+          </div>
+      }
       </List>
     </Collapse>
-
   )
 }

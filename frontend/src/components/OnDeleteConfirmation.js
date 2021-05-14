@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }));
 
-export default function OnDeleteConfirmation({openAlertBox,closeAlertBox,commenter,deleteComment, caption}) {
+export default function OnDeleteConfirmation({openAlertBox,closeAlertBox,element,toDelete, caption}) {
 
   const classes = useStyles();
   // getModalStyle is not a pure function, we roll the style only on the first render
@@ -78,7 +78,7 @@ export default function OnDeleteConfirmation({openAlertBox,closeAlertBox,comment
         <Button color="primary" onClick={closeAlertBox}>
           Cancel
         </Button>
-        <Button variant="contained" color="primary" onClick={() => deleteComment(commenter.id)}>
+        <Button variant="contained" color="primary" onClick={() => toDelete(element.id)}>
           Delete
         </Button>
       </div>
@@ -88,7 +88,7 @@ export default function OnDeleteConfirmation({openAlertBox,closeAlertBox,comment
   return (
     <div>
      <Modal
-      open={openAlertBox[commenter.id]}
+      open={openAlertBox[element.id]}
       onClose={closeAlertBox}
       aria-labelledby="simple-modal-title"
       aria-describedby="simple-modal-description"
