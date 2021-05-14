@@ -1,29 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardMedia from '@material-ui/core/CardMedia';
-import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
-import IconButton from '@material-ui/core/IconButton';
-import MenuItem from '@material-ui/core/MenuItem';
-import Menu from '@material-ui/core/Menu';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
-import ThumbUpRoundedIcon from '@material-ui/icons/ThumbUpRounded';
-import ThumbDownRoundedIcon from '@material-ui/icons/ThumbDownRounded';
-import ChatBubbleIcon from '@material-ui/icons/ChatBubble';
 import Badge from '@material-ui/core/Badge';
-import { getAllPosts, upVoteToPost, downVoteToPost, getPostsByCategory } from '../utils/api'
-import { getPosts, modalState, upVote, downVote, upVoted, downVoted, getId } from '../actions'
+import { getAllPosts, getPostsByCategory } from '../utils/api'
+import { getPosts, modalState } from '../actions'
 import Divider from '@material-ui/core/Divider';
-
-import { BsShift } from "react-icons/bs";
-import { BsShiftFill } from "react-icons/bs";
-
-import { BsChat } from "react-icons/bs";
-
 import {useSelector, useDispatch} from 'react-redux'
 import EditPost from './EditPost'
 import Comments from './Comments'
@@ -36,13 +19,12 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
-import ListSubheader from '@material-ui/core/ListSubheader';
+import PostMenu from './PostMenuItem'
+import OnDeleteConfirmation from './OnDeleteConfirmation'
+import ShowMoreText from 'react-show-more-text';
+import ReactLoading from 'react-loading';
 
 const useStyles = makeStyles((theme) => ({
-  /*root: {
-    display: 'flex',
-
-  },*/
   root: {
     width: '100%',
     maxWidth: '96ch',
@@ -56,42 +38,15 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 'bold',
 
   },
-  cardRoot: {
-    marginBottom:'12px',
-    marginLeft: '48px',
-    width: '70%',
-  },
-  rotate: {
-    transform: 'rotate(180deg)',
-
-
-  },
-  button: {
-    //margin: theme.spacing(1),
-
-
-    width: '0px',
-
-  },
-  comments: {
-    textAlign: 'center',
-    textAlignLast: 'right',
-  },
-  coloredButton: {
-    backgroundColor:'black'
-  },
-  lists:{
-    listStyle:'none',
-    margin:0
-
-  },
-  center: {
-    postion: 'absolute',
+  loading: {
+    position: 'fixed',
     top: '50%',
     left: '50%',
-    margin: '150px 0 0 400px',
-    zIndex: 15,
-  }
+    marginTop: '-100px',
+      marginLeft: '-100px',
+
+
+  },
 }));
 
 /* EmptyIcon icon */
@@ -106,334 +61,193 @@ export default function Posts() {
   /* Reference to dispatch function */
   const dispatch = useDispatch()
 
+  const [freshPost, setFreshPost] = React.useState(false);
+
+  const added = useSelector(state => state.newPostReducer.newPost);
+
 
   const foodie = useSelector(state => state.postsReducer);
   const votedState = useSelector(state => state.voteReducer)
   const categorySelected = useSelector(state =>state.postsReducer.category)
   const modea = useSelector(state => state.modalReducer.modalState)
 
+  const [isReqDone, setIsReq] = React.useState(false);
+
   const [postCat, setPostCat] = React.useState([])
   /* Async method to get post from API */
   const getElements = async () => {
     //console.log(categorySelected)
     if (categorySelected===undefined) {
-      const elems = await getAllPosts();
-      setPostCat(await getAllPosts());
-      return elems;
+      setTimeout(() => {
+        const elems =  getAllPosts();
+        elems.then(x=> setIsReq(true))
+        elems.then(x=> setPostCat(x))
+        return elems;
+        //setPostCat(elems);
+      },1000);
+      //setPostCat(await getAllPosts());
     } else {
-      const elems = await getPostsByCategory(categorySelected);
-      setPostCat(await getPostsByCategory(categorySelected))
-      //setAllposts(elems)
-      console.log(elems);
-      // dispatch getPosts action
-      //dispatch(getPosts(await getAllPosts()))
+      setTimeout(() => {
+      const elems = getPostsByCategory(categorySelected);
+      elems.then(x=> setIsReq(true))
+      elems.then(x=> setPostCat(x))
       return elems;
+      //setPostCat(elems);
+      },1000)
+      //setPostCat(await getPostsByCategory(categorySelected))
     }
-
  };
+
+  // Set if new Post has been added or not
+  const [postAdded, setPostAdded] = React.useState(false);
+  // set new post is added
+  const newPostAdded =() => {
+    setPostAdded(true)
+    setIsReq(false)
+  }
+
  useEffect(() => {
    // getElements method call
    getElements()
- },[])
 
+ },[postAdded,isReqDone, added])
 
   const classes = useStyles();
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const handleMenuClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-  // Close menu
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
-  /* State to store modal state(open or close) and its setter (setOpen)*/
-  const [open, setOpen] = React.useState(false);
-  /* called if modal is closed */
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  /*  */
-  const openModal = (e,id) => {
-    // dispatch action to set modal state open and id of the post clicked
-    dispatch(modalState({open:true,id:id}))
-    //console.log(id)
-
-  }
-
   // state containing id of clicked posts
   const [clickedPostedId, setClickedPostId] = React.useState('');
-  const setId = (id) => {
-    setClickedPostId(id)
 
-  }
-
-  // reload window
-  const reload=()=>window.location.reload();
   // Delete post
   const deletePosts = (id) => {
     deletePost(id)
     // refresh window
-    reload()
+    setIsReq(false)
   }
 
-  const [upIcon, setUpIcon]= React.useState(BsShift);
-  const [downIcon, setDownIcon] = React.useState(BsShift);
-  /* upVote or downVote a post */
-  const upVotePost = (id) => {
-    //dispatch(getId({id}))
-
-    if (votedState.upVoted === false ) {
-      console.log('if')
-
-      // Call Api to upVote the post
-      upVoteToPost(id);
-
-      // dispatch upVote action (increase count by 1)
-      dispatch(upVote({id}));
-      //console.log(foodie)
-      // set upVotedState to true
-      dispatch(upVoted(true,id));
-
-
-
-      // Change icon to Filled icon
-      setUpIcon(BsShiftFill);
-      setDownIcon(BsShift);
-
-      // set downVotedState to false
-      //dispatch(downVoted(false,id));
-
-    } else {
-      console.log('else')
-      downVoteToPost(id)
-
-      // dispatch upVote action
-      dispatch(downVote({id}))
-      // set upVotedState to false
-      dispatch(upVoted(false,id));
-
-      setUpIcon(BsShift);
-    }
-
-
-  }
-  const downVotePost = async (id) => {
-    if (votedState.downVoted === false) {
-      downVoteToPost(id);
-
-      setDownIcon(BsShiftFill)
-      setUpIcon(BsShift)
-
-      // dispatch upVote action
-      dispatch(downVote({id}))
-
-
-
-      // set upVotedState to true
-      dispatch(downVoted(true,id));
-      // set downVotedState to true
-      //dispatch(downVoted({downVoted:true, id}))
-      // set upVotedState to false
-      //dispatch(upVoted(false,id))
-
-    } else {
-      console.log('else')
-      // upVote Post
-      upVoteToPost(id)
-
-      // dispatch upVote action
-      dispatch(upVote({id}))
-      // set downVotedState to false
-      dispatch(downVoted(false,id))
-
-      setDownIcon(BsShift);
-
-    }
-
-  }
-
-  // Comment Section expanded State
-  const [expanded, setExpanded] = React.useState(false);
-
-  // Set state for comment sections
-  const handleExpandClick = (id) => {
-    setExpanded(!expanded);
-  };
-
-  const [date, setDate] = React.useState((new Date).toString())
+  // Method to convert unix time to human date
   const convertUnixToDate = (time) => {
     var dates = new Date(time)
     return dates.toString();
   }
 
-  const getid = (e,id) => {
-    console.log(id);
+  // delete confirmation modal open or close state
+  const [openDelAlertBox, setOpenDelAlertBox] = React.useState({})
+
+  /* Open Delete confirm modal method */
+  const openAlertBox = (id) => {
+    setOpenDelAlertBox({
+      [id]: true
+    });
+  }
+  // Close Delete confirm modal method
+  const closeAlertBox = (id) => {
+    setOpenDelAlertBox({
+      [id]: false
+    })
+  }
+
+  // State to store if input modal is open or closed
+  const [openInputMods, setOpenInputMods] = React.useState({})
+
+  /* Called to open Input modal */
+  const openInputModal = (id) => {
+    setOpenInputMods({
+      [id]: true
+    });
+  }
+  // Called to Input Modal method
+  const closeInputModal = (id) => {
+    setOpenInputMods({
+      [id]: false
+    })
   }
 
     return (
-      /*<div >
-        {postCat.length !== 0 ?  postCat.map((postings,i) => (
-        <li  className={classes.lists} key={i} >
-          <Card className={classes.cardRoot}  >
-            <CardHeader
-              action={
-                <div>
-                  <IconButton aria-label="settings" onClick={handleMenuClick}>
-                    <MoreVertIcon />
-                  </IconButton>
-                  <Menu
-                    id="simple-menu"
-                    anchorEl={anchorEl}
-                    keepMounted
-                    open={Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                  >
-                    <MenuItem onClick={
-                      (e) => {handleClose(); openModal(e,postings.id); handleMenuClose(); setId(postings.id)}
-                    }>
-                      Edit Post
-                    </MenuItem>
-                    <MenuItem onClick= {
-                      () => {handleClose(); deletePosts(postings.id); handleMenuClose()}
-                    }>
-                      Delete Post
-                    </MenuItem>
-                  </Menu>
-                </div>
-              }
-              title=<Badge
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              badgeContent={postings.category} color="primary">{postings.author}</Badge>
-              subheader={convertUnixToDate(postings.timestamp)}
-              />
-            <CardContent>
-              <Typography gutterBottom variant="h6" component="h2">
-                {postings.title}
-              </Typography>
-              <Typography variant="body2" color="textPrimary" component="p" >
-                {postings.body}
-              </Typography>
-            </CardContent>
-            <CardActions >
-              <Button
-                className={classes.button}
-                startIcon={upIcon}
-                onClick = {() => upVotePost(postings.id)}
-              >
-                {postings.voteScore}
-              </Button>
-              <Divider orientation="vertical" flexItem/>
-              <Button
-                className={classes.button}
-                startIcon={downIcon} className={classes.rotate}
-                onClick={() => downVotePost(postings.id)}
-              >
-              </Button>
-              <Button
-                className={classes.button}
-                startIcon={<BsChat />}
-                onClick ={handleExpandClick}
-              >
-                {postings.commentCount}
-              </Button>
-            </CardActions>
-            {<Comments
-              expanded={expanded}
-              />}
-          </Card>
-        </li>
-        )) : <NoPostFound/>}
-        {modea.open ===true &&(
-        <div>
-          {<EditPost
-            clickedPostId={clickedPostedId}/>}
-        </div>
-      )}
-      </div>*/
       <div>
-        {postCat.length !== 0 ?  postCat.map((postings,i) => (
-        <List className={classes.root}>
-        <Card className={classes.root}>
-          <ListItem alignItems="flex-start">
-            <ListItemAvatar>
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-            </ListItemAvatar>
-
-            <ListItemText
-              primary={postings.author}
-              secondary={convertUnixToDate(postings.timestamp)}
-            />
-
-            <div>
-              <IconButton aria-label="settings" onClick={handleMenuClick}>
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                id="simple-menu"
-                anchorEl={anchorEl}
-                keepMounted
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}>
-                  <MenuItem onClick={
-                    (e) => { handleClose();
-                      openModal(e,postings.id);
-                      handleMenuClose();
-                      setId(postings.id)}
-                  }> Edit Post
-                  </MenuItem>
-                  <MenuItem onClick= {
-                    () => {
-                      handleClose();
-                      deletePosts(postings.id);
-                      handleMenuClose()}
-                  }>
-                    Delete Post
-                  </MenuItem>
-              </Menu>
+        {
+          !isReqDone ?
+            <div className={classes.loading}>
+              <ReactLoading
+                type={'spinningBubbles'}
+                color={'green'}
+                height={'10%'}
+                width={'10%'}
+              />
             </div>
-          </ListItem>
-          <ListItem  alignItems="flex-start">
-            <div>
-              <Typography
-                component="span"
-                variant="subtitle1"
-                className={classes.block}
-                color="textPrimary"
-              >
-                {postings.title}
-              </Typography>
+          :
 
-              <Typography
-                component="span"
-                variant="body2"
-                className={classes.inline}
-                color="textPrimary"
-              >
-                {postings.body}
-              </Typography>
+        postCat.length !== 0 ?  postCat.map((postings,i) => (
+          <List key={i} className={classes.root}>
+            <Card className={classes.root}>
+              <ListItem alignItems="flex-start">
+                <ListItemAvatar>
+                  <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={postings.author}
+                  secondary={convertUnixToDate(postings.timestamp)}
+                />
+                <div>
+                  <PostMenu
+                    openEditModal={() => openInputModal(postings.id)}
+                    openAlertBox={() => openAlertBox(postings.id)}
+                    post={postings}
+                  />
+                  <OnDeleteConfirmation
+                    openAlertBox={openDelAlertBox}
+                    closeAlertBox={() => closeAlertBox(postings.id)}
+                    toDelete={() => deletePosts(postings.id)}
+                    element={postings}
+                    caption='post'
+                    />
+                    <EditPost clickedPostId={postings.id}
+                    openInputModal={openInputMods}
+                    closeInputModal={() => closeInputModal(postings.id)}
+                    newPostAdded={newPostAdded}
+                    />
+                </div>
+              </ListItem>
+              <ListItem  alignItems="flex-start">
+                <div>
+                  <Typography
+                    component="span"
+                    variant="subtitle1"
+                    className={classes.block}
+                    color="textPrimary"
+                  >
+                    {postings.title}
+                  </Typography>
 
-              <VotePost posters={postings}
-              Voteid={postings.is}/>
-            </div>
-          </ListItem>
-          <Divider  component="li" />
-        {<Comments
-          expanded={expanded}
-          />}
-          </Card>
-        </List>
+                  <ShowMoreText
+                    lines={5}
+                    more='See More'
+                    less='See Less'
+                    className={classes.inline}
+                    anchorClass="anchor-more-text"
+                    expanded={false}
+                    width={650}
+                  >
+                  {postings.body}
+                  </ShowMoreText>
+                  {/*<Typography
+                    component="span"
+                    variant="body2"
+                    className={classes.inline}
+                    color="textPrimary"
+                  >
+                    {postings.body}
+                  </Typography>*/}
 
+                  <VotePost posters={postings}
+                    Voteid={postings.is}
+                  />
+                </div>
+              </ListItem>
+              <Divider  component="li" />
+
+            </Card>
+          </List>
         )) : <NoPostFound/>}
-        {modea.open ===true &&(
-          <EditPost clickedPostId={clickedPostedId} />
-        )}
       </div>
   )
 }

@@ -18,7 +18,8 @@ import postsReducer from './postReducer';
 import modalReducer from './modalReducers';
 import voteReducer from './voteReducer';
 import voteCommentReducer from './voteCommentReducer';
-import commentReducer from './commentReducer'
+import commentReducer from './commentReducer';
+import newPostReducer from './newPostReducer';
 
 const initialPost = {
     id: null,
@@ -40,5 +41,6 @@ export default combineReducers ({
   modalReducer,
   voteReducer,
   voteCommentReducer,
-  commentReducer
+  commentReducer,
+  newPostReducer,
 })

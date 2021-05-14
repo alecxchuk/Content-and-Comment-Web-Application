@@ -18,7 +18,9 @@ export async function getPostsByCategory(category) {
 export async function getAllPosts() {
   try {
   const res = await axios.get(`${uri}/posts`, {headers})
+  
   return res.data
+
   }
   catch (err) {
     console.log(err)

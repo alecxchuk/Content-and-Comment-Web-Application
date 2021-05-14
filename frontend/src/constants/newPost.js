@@ -1,0 +1,1 @@
+export const NEW_POST_ADDED = 'NEW_POST_ADDED'
