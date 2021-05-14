@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.css": "/Content-and-Comment-Web-Application/static/css/main.d87421e9.chunk.css",
+    "main.js": "/Content-and-Comment-Web-Application/static/js/main.ec76833c.chunk.js",
+    "main.js.map": "/Content-and-Comment-Web-Application/static/js/main.ec76833c.chunk.js.map",
+    "runtime-main.js": "/Content-and-Comment-Web-Application/static/js/runtime-main.1c823cbb.js",
+    "runtime-main.js.map": "/Content-and-Comment-Web-Application/static/js/runtime-main.1c823cbb.js.map",
+    "static/js/2.c53f2b4b.chunk.js": "/Content-and-Comment-Web-Application/static/js/2.c53f2b4b.chunk.js",
+    "static/js/2.c53f2b4b.chunk.js.map": "/Content-and-Comment-Web-Application/static/js/2.c53f2b4b.chunk.js.map",
+    "static/js/3.a16e6cb7.chunk.js": "/Content-and-Comment-Web-Application/static/js/3.a16e6cb7.chunk.js",
+    "static/js/3.a16e6cb7.chunk.js.map": "/Content-and-Comment-Web-Application/static/js/3.a16e6cb7.chunk.js.map",
+    "index.html": "/Content-and-Comment-Web-Application/index.html",
+    "static/css/main.d87421e9.chunk.css.map": "/Content-and-Comment-Web-Application/static/css/main.d87421e9.chunk.css.map",
+    "static/js/2.c53f2b4b.chunk.js.LICENSE.txt": "/Content-and-Comment-Web-Application/static/js/2.c53f2b4b.chunk.js.LICENSE.txt",
+    "static/media/App.css": "/Content-and-Comment-Web-Application/static/media/emptyIcon.39afc3c3.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.1c823cbb.js",
+    "static/js/2.c53f2b4b.chunk.js",
+    "static/css/main.d87421e9.chunk.css",
+    "static/js/main.ec76833c.chunk.js"
+  ]
+}
